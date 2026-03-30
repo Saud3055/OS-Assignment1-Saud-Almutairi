@@ -30,6 +30,8 @@ class Process implements Runnable {
     private int timeQuantum; // Time slice (time quantum) allowed per CPU access (in milliseconds)
     private int remainingTime; // Time left for the process to finish its execution
     private int priority; // Feature 1
+    private long lastExecutionTime; // Feature 3
+    private long totalWaitingTime = 0; // Feature 3
     // Constructor to initialize the process with name, burst time, and time quantum
 
     public Process(String name, int burstTime, int timeQuantum) {
@@ -38,11 +40,15 @@ class Process implements Runnable {
         this.timeQuantum = timeQuantum;
         this.remainingTime = burstTime; // Initially, remaining time is equal to the burst time
         this.priority = 1 + new Random().nextInt(5); // Feature 1
+        this.lastExecutionTime = System.currentTimeMillis(); // Feature 3
     }
 
     // This method will be called when the thread for this process is started
     @Override
     public void run() {
+        long now = System.currentTimeMillis();
+        totalWaitingTime += (now - lastExecutionTime);
+        lastExecutionTime = now;
         // Simulate running for either the time quantum or remaining time, whichever is
         // smaller
         int runTime = Math.min(timeQuantum, remainingTime); // Run for the smaller of the two times
@@ -142,6 +148,10 @@ class Process implements Runnable {
 
     public int getPriority() { // Feature 1
         return priority;
+    }
+
+    public long getWaitingTime() {
+        return totalWaitingTime;
     }
 
     // Check if the process has finished (i.e., no remaining time)
